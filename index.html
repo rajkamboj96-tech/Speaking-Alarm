@@ -2,18 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APK Voice Alarm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pro APK Alarm</title>
     <style>
-        :root { --primary: #22d3ee; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #f43f5e; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .app-container { width: 100%; max-width: 420px; background: var(--card); padding: 25px; border-radius: 24px; text-align: center; }
-        #clock { font-size: 3rem; font-weight: 800; color: var(--primary); margin-bottom: 20px; }
-        .permission-overlay { background: rgba(34, 211, 238, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--primary); }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #334155; box-sizing: border-box; }
-        button { background: var(--primary); color: #0f172a; font-weight: bold; cursor: pointer; border: none; }
-        .btn-stop { background: var(--danger); color: white; display: none; margin-bottom: 20px; }
-        .alarm-item { background: #334155; padding: 10px; border-radius: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        :root { --primary: #00f2ff; --bg: #0b0f19; --card: #161b2c; --text: #ffffff; --danger: #ff4757; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; margin: 0; overflow-x: hidden; }
+        .app-container { width: 100%; max-width: 400px; background: var(--card); padding: 20px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid #232a3d; }
+        
+        #clock { font-size: 3.2rem; font-weight: 900; color: var(--primary); margin-bottom: 15px; font-family: monospace; text-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
+        
+        /* APK AUDIO UNLOCKER */
+        .activation-zone { background: rgba(0, 242, 255, 0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed var(--primary); }
+        .btn-activate { background: var(--primary); color: #000; font-weight: 800; padding: 14px; border: none; border-radius: 10px; width: 100%; cursor: pointer; text-transform: uppercase; }
+
+        .input-group { background: #0b0f19; padding: 15px; border-radius: 15px; border: 1px solid #232a3d; margin-bottom: 20px; text-align: left; }
+        label { font-size: 0.7rem; color: var(--primary); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #232a3d; background: #161b2c; color: white; box-sizing: border-box; }
+        
+        .btn-save { background: linear-gradient(to right, var(--primary), #00a8ff); color: #000; font-weight: bold; border: none; padding: 14px; border-radius: 10px; width: 100%; cursor: pointer; }
+        
+        .btn-stop { background: var(--danger); color: white; display: none; margin-bottom: 20px; font-weight: bold; padding: 15px; border-radius: 12px; width: 100%; border: none; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        .alarm-card { background: #1c243a; padding: 12px; border-radius: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary); }
+        .btn-del { background: #2f3542; color: #ff4757; border: 1px solid #ff4757; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; }
+        
+        .btn-reset { background: transparent; color: var(--danger); border: 1px solid var(--danger); margin-top: 30px; font-size: 0.8rem; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -21,54 +35,62 @@
 <div class="app-container">
     <div id="clock">00:00:00</div>
     
-    <div id="setupBox" class="permission-overlay">
-        <p style="font-size: 0.8rem; margin-top: 0;">Tap below to enable Alarm Audio for this session:</p>
-        <button onclick="enableAudioEngine()">✅ ENABLE AUDIO ENGINE</button>
+    <div id="setupBox" class="activation-zone">
+        <button class="btn-activate" onclick="unlockAudio()">🔊 ACTIVATE AUDIO ENGINE</button>
+        <p style="font-size: 0.65rem; color: var(--primary); margin: 8px 0 0;">Tap once to enable sound for this session</p>
     </div>
 
     <button id="stopBtn" class="btn-stop" onclick="stopEverything()">🛑 STOP ALARM</button>
 
-    <div style="background: #0f172a; padding: 15px; border-radius: 15px;">
+    <div class="input-group">
+        <label>Alarm Time</label>
         <input type="time" id="alarmTime">
-        <input type="text" id="alarmNote" placeholder="Reminder Message">
+        
+        <label>Voice Message (English)</label>
+        <input type="text" id="alarmNote" placeholder="e.g. Time for Breakfast">
+        
+        <label>Custom Ringtone (MP3)</label>
         <input type="file" id="audioFile" accept="audio/*">
-        <button onclick="saveNewAlarm()">+ SAVE ALARM</button>
+        
+        <button class="btn-save" onclick="saveAlarm()">+ SAVE ALARM</button>
     </div>
 
     <div id="alarmList"></div>
+
+    <button class="btn-reset" onclick="factoryReset()">⚠️ FACTORY RESET (CLEAR ALL)</button>
 </div>
 
 <audio id="player" loop preload="auto"></audio>
 
 <script>
-    let alarms = JSON.parse(localStorage.getItem('apkAlarms')) || [];
+    let alarms = JSON.parse(localStorage.getItem('finalAlarms')) || [];
     const player = document.getElementById('player');
     let db, stopTimer;
     let audioUnlocked = false;
 
-    // 1. Initialize IndexedDB
-    const request = indexedDB.open("APKAlarmDB", 1);
+    // 1. IndexedDB Setup (For Large Audio)
+    const request = indexedDB.open("ProAlarmDB_V5", 1);
     request.onupgradeneeded = e => e.target.result.createObjectStore("sounds");
     request.onsuccess = e => { db = e.target.result; render(); };
 
-    // 2. Unlock Audio Engine (Crucial for APK/WebView)
-    function enableAudioEngine() {
-        // Play a silent beep to unlock the audio channel
-        const silentMsg = new SpeechSynthesisUtterance("Audio Enabled");
-        silentMsg.volume = 0.01;
-        window.speechSynthesis.speak(silentMsg);
+    // 2. APK AUDIO UNLOCK (Crucial)
+    function unlockAudio() {
+        audioUnlocked = true;
         
+        // Android Speech Handshake
+        const silentSpeech = new SpeechSynthesisUtterance("");
+        window.speechSynthesis.speak(silentSpeech);
+        
+        // Android Media Handshake
         player.play().then(() => {
             player.pause();
             player.currentTime = 0;
-        }).catch(e => console.log("Unlock failed"));
-
-        audioUnlocked = true;
-        document.getElementById('setupBox').style.display = 'none';
-        alert("Audio Engine Ready!");
+            document.getElementById('setupBox').innerHTML = "<span style='color:var(--primary); font-weight:bold;'>✅ AUDIO READY</span>";
+            setTimeout(() => { document.getElementById('setupBox').style.display = 'none'; }, 1000);
+        }).catch(() => alert("Tap 'Activate' again to enable speakers."));
     }
 
-    // 3. Clock & Logic
+    // 3. Clock Loop
     setInterval(() => {
         const now = new Date();
         document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: true });
@@ -76,67 +98,98 @@
         if (now.getSeconds() === 0) {
             const time24 = now.toLocaleTimeString('en-GB', { hour12: false }).substring(0, 5);
             alarms.forEach(a => {
-                if (a.time === time24) trigger(a);
+                if (a.time === time24) triggerAlarmSequence(a);
             });
         }
     }, 1000);
 
-    function saveNewAlarm() {
+    function saveAlarm() {
         const time = document.getElementById('alarmTime').value;
-        const note = document.getElementById('alarmNote').value || "Alarm";
+        const note = document.getElementById('alarmNote').value || "Alarm Triggered";
         const file = document.getElementById('audioFile').files[0];
-        if(!time || !file) return alert("Select Time & File!");
         
-        const id = "ID_" + Date.now();
-        db.transaction("sounds", "readwrite").objectStore("sounds").put(file, id).onsuccess = () => {
+        if(!time || !file) return alert("Select Time and Sound File first!");
+        if(!audioUnlocked) return alert("Tap the 'ACTIVATE AUDIO' button at the top first!");
+
+        const id = "AL_" + Date.now();
+        const trans = db.transaction("sounds", "readwrite").objectStore("sounds").put(file, id);
+        
+        trans.onsuccess = () => {
             alarms.push({ id, time, note, fileName: file.name });
-            localStorage.setItem('apkAlarms', JSON.stringify(alarms));
+            localStorage.setItem('finalAlarms', JSON.stringify(alarms));
             render();
+            document.getElementById('audioFile').value = ""; // Clear file input
+            alert("Alarm Saved Permanently!");
         };
     }
 
-    function trigger(alarm) {
-        if (!audioUnlocked) return; // Prevent silent failure
+    function triggerAlarmSequence(alarm) {
+        if (!audioUnlocked) return; 
 
         document.getElementById('stopBtn').style.display = "block";
-        db.transaction("sounds", "readonly").objectStore("sounds").get(alarm.id).onsuccess = e => {
+        
+        const trans = db.transaction("sounds", "readonly").objectStore("sounds").get(alarm.id);
+        trans.onsuccess = e => {
             const blob = e.target.result;
             if(blob) player.src = URL.createObjectURL(blob);
             
+            // Step 1: Speak Time + Note
             window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(`Attention. The time is ${alarm.time}. ${alarm.note}`);
+            const [h, m] = alarm.time.split(':');
+            const h12 = h % 12 || 12;
+            const ampm = h >= 12 ? "PM" : "AM";
             
-            // On Android, we play audio AND speech together to ensure one works
-            msg.onstart = () => { player.play(); }; 
-            
+            const msg = new SpeechSynthesisUtterance(`Attention. It is ${h12} ${m} ${ampm}. ${alarm.note}`);
+            msg.onend = () => { 
+                // Step 2: Play Sound after speaking
+                if(player.src) player.play(); 
+                // Step 3: Start 30s auto-stop
+                clearTimeout(stopTimer);
+                stopTimer = setTimeout(stopEverything, 30000);
+            };
             window.speechSynthesis.speak(msg);
-            stopTimer = setTimeout(stopEverything, 30000); 
         };
     }
 
     function stopEverything() {
         window.speechSynthesis.cancel();
         player.pause();
+        player.currentTime = 0;
         document.getElementById('stopBtn').style.display = "none";
         clearTimeout(stopTimer);
     }
 
     function render() {
         const list = document.getElementById('alarmList');
-        list.innerHTML = "";
-        alarms.forEach(a => {
+        list.innerHTML = alarms.length ? "<label style='margin-top:10px;'>Active Alarms</label>" : "";
+        alarms.sort((a,b)=>a.time.localeCompare(b.time)).forEach(a => {
             const div = document.createElement('div');
-            div.className = 'alarm-item';
-            div.innerHTML = `<div><b>${a.time}</b><br><small>${a.note}</small></div><button onclick="deleteAlarm('${a.id}')" style="width:auto; background:#475569; font-size:0.7rem;">Del</button>`;
+            div.className = 'alarm-card';
+            div.innerHTML = `
+                <div style="text-align:left">
+                    <b style="color:var(--primary); font-size:1.1rem;">${a.time}</b><br>
+                    <small style="opacity:0.8">${a.note}</small><br>
+                    <small style="color:var(--primary); font-size:0.6rem">🎵 ${a.fileName}</small>
+                </div>
+                <button class="btn-del" onclick="deleteAlarm('${a.id}')">Del</button>
+            `;
             list.appendChild(div);
         });
     }
 
     function deleteAlarm(id) {
         alarms = alarms.filter(a => a.id !== id);
-        localStorage.setItem('apkAlarms', JSON.stringify(alarms));
+        localStorage.setItem('finalAlarms', JSON.stringify(alarms));
         db.transaction("sounds", "readwrite").objectStore("sounds").delete(id);
         render();
+    }
+
+    function factoryReset() {
+        if(confirm("DELETE ALL DATA? This will erase all alarms and sounds permanently.")) {
+            localStorage.clear();
+            const trans = db.transaction("sounds", "readwrite").objectStore("sounds").clear();
+            trans.onsuccess = () => location.reload();
+        }
     }
 </script>
 </body>
